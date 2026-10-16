@@ -8,7 +8,10 @@
  *  - every call carries X-Client-App so the backend can reject non-browser clients.
  */
 
-export const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api').replace(/\/$/, '');
+export const API_BASE = (
+  import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.PROD ? '/api' : 'http://localhost:8080/api')
+).replace(/\/$/, '');
 const CLIENT_HEADER = { 'X-Client-App': 'skillforge-web' };
 
 const ACCESS_KEY = 'sf.access';
