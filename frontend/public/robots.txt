@@ -1,0 +1,45 @@
+# SkillForge AI - robots.txt
+# This application is private and login-protected. Crawlers are refused.
+User-agent: *
+Disallow: /
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /intake
+Disallow: /chat
+Disallow: /resume
+Disallow: /trends
+Disallow: /profile
+Disallow: /admin
+
+# Aggressive opt-outs for known AI/search crawlers
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: Applebot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+# No sitemap is published for this project.

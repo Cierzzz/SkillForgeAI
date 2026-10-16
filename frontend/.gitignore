@@ -1,0 +1,17 @@
+# Frontend: only public build config may ever reach git.
+.env
+.env.*
+!.env.example
+netlify/.netlify/
+.netlify/
+
+node_modules/
+dist/
+build/
+.vite/
+
+*.log
+.DS_Store
+.vscode/
+.idea/
+.vercel

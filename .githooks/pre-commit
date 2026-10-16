@@ -1,0 +1,19 @@
+#!/bin/sh
+# Pre-commit guard: blocks commits that contain secrets or forbidden files.
+# Enabled by: git config core.hooksPath .githooks
+#
+# Bypass once in a real emergency with:  git commit --no-verify
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "pre-commit: node not found, skipping secret scan"
+  exit 0
+fi
+
+echo "pre-commit: scanning staged files for secrets..."
+if node "$(git rev-parse --show-toplevel)/scripts/check-secrets.mjs"; then
+  exit 0
+fi
+
+echo ""
+echo "Commit rejected. See docs/BACKEND-PRIVACY.md for how to handle secrets safely."
+exit 1

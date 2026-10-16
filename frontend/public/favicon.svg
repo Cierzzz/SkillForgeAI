@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <!--
+    Favicon. Flat colours only: a favicon is painted outside the page, so the
+    CSS custom properties in brandmark.svg are not available here. These are
+    the night-board values resolved by hand - ink #e9f0f5, lamp #f8631c.
+  -->
+  <rect width="300" height="300" fill="#0c1216" />
+  <path d="M50 175 L150 235 L250 175 L250 195 L150 255 L50 195 Z" fill="#e9f0f5" />
+  <path d="M50 212 L150 272 L250 212 L250 232 L150 292 L50 232 Z" fill="#e9f0f5" opacity="0.45" />
+  <path d="M150 66 L150 100" stroke="#9fb0c0" stroke-width="6" />
+  <path d="M150 196 L150 226" stroke="#f8631c" stroke-width="6" />
+  <path d="M150 26 L208 100 L150 174 L92 100 Z" fill="none" stroke="#f8631c" stroke-width="11" stroke-linejoin="miter" />
+  <rect x="139" y="89" width="22" height="22" fill="#f8631c" transform="rotate(45 150 100)" />
+</svg>

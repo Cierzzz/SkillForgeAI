@@ -1,0 +1,17 @@
+{
+  "name": "SkillForge AI",
+  "short_name": "SkillForge",
+  "description": "Private AI career guidance and skill assessment platform.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#070d19",
+  "theme_color": "#0b1220",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

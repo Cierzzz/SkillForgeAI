@@ -1,0 +1,28 @@
+<svg xmlns="http://http://www.w3.org/2000/svg" viewBox="0 0 300 300" role="img" aria-label="SkillForge AI">
+  <!--
+    SkillForge AI - the brandmark, drawn for the Track Board.
+
+    The mark is an anvil: two struck plates under a hovering node. Recoloured
+    into the board's palette on purpose. The original shipped a cyan node,
+    which would have put a second saturated colour on the board - and on this
+    system the lamp is the ONLY signal colour, meaning one thing: struck
+    forward. So the node became the lamp, and the plates became vinyl.
+
+    Colours come from the same custom properties as everything else, so the
+    mark tracks the scene (night / daylight) and the ink-load slider instead
+    of being a frozen raster that drifts out of the system.
+  -->
+  <g fill="none" fill-rule="evenodd">
+    <!-- Vinyl plates. The lower one recedes, the way shadowed enamel does. -->
+    <path d="M50 175 L150 235 L250 175 L250 195 L150 255 L50 195 Z" fill="var(--ink)" opacity="0.95" />
+    <path d="M50 212 L150 272 L250 212 L250 232 L150 292 L50 232 Z" fill="var(--ink)" opacity="0.45" />
+
+    <!-- The alignment stem: ink above the lamp, lamp below it. -->
+    <path d="M150 66 L150 100" stroke="var(--ink-2)" stroke-width="6" stroke-linecap="butt" />
+    <path d="M150 196 L150 226" stroke="var(--lamp)" stroke-width="6" stroke-linecap="butt" />
+
+    <!-- The struck node. Outline plus core: the only lamp on the mark. -->
+    <path d="M150 26 L208 100 L150 174 L92 100 Z" stroke="var(--lamp)" stroke-width="11" stroke-linejoin="miter" />
+    <rect x="139" y="89" width="22" height="22" fill="var(--lamp)" transform="rotate(45 150 100)" />
+  </g>
+</svg>

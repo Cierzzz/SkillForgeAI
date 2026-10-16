@@ -1,0 +1,846 @@
+/* =========================================================================
+   SkillForge AI - THE TRACK BOARD
+   Enamel and vinyl wayfinding, lit at night.
+
+   The board is a real object: cold enamel ground, matte cut-vinyl lettering
+   that CATCHES overhead light rather than emitting it, one signal colour
+   reserved for the lamp that strikes forward, and a key grid that stays
+   visible as hairlines because the armature is part of the design.
+
+   Nothing on this board glows. Nothing floats.
+
+   Mobile first: 360px+ -> 768px+ -> 1024px+ -> 1440px+.
+   ========================================================================= */
+
+/* ---------------------------------------------------------------- fonts -- */
+/* Self-hosted. A hosted font stylesheet would be an external dependency the
+   page does not control, and the CSP rightly forbids one. */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url('/fonts/archivo-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url('/fonts/archivo-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url('/fonts/archivo-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
+    U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9,
+    U+20AB;
+}
+
+/* --------------------------------------------------------------- tokens -- */
+:root {
+  /* Saturation is a board-wide ink load. 1 is the value the palette was mixed
+     at; the control moves it. Every colour below is mixed in HSL so this one
+     number governs the whole board instead of 40 magic hex values. */
+  --sat: 1;
+
+  /* Enamel ground, dark: the lit board at night. A near-black carrying a
+     green-blue cast. Never pure black - enamel is not black. */
+  --board:      hsl(203 calc(var(--sat) * 20%) 6%);
+  --board-2:    hsl(203 calc(var(--sat) * 17%) 9%);
+  --key:        hsl(203 calc(var(--sat) * 15%) 12.5%);
+  --key-2:      hsl(203 calc(var(--sat) * 14%) 16%);
+  --rule:       hsl(203 calc(var(--sat) * 22%) 20%);
+  --rule-2:     hsl(203 calc(var(--sat) * 24%) 31%);
+
+  /* Vinyl lettering. Matte ink under a lamp, so it is solid - never glowing. */
+  --ink:        hsl(200 calc(var(--sat) * 20%) 96%);
+  --ink-2:      hsl(203 calc(var(--sat) * 14%) 75%);
+  --ink-3:      hsl(203 calc(var(--sat) * 12%) 56%);
+
+  /* Litre orange. The ONLY signal colour, and it means one thing: this lamp is
+     struck forward. A "go here" mark. Reserved, never decorative. */
+  --lamp:       hsl(18 calc(var(--sat) * 90%) 56%);
+  --lamp-2:     hsl(18 calc(var(--sat) * 92%) 64%);
+  --lamp-dim:   hsl(18 calc(var(--sat) * 60%) 40%);
+  --on-lamp:    hsl(203 calc(var(--sat) * 40%) 7%);
+
+  /* Photopolymer key caps: the strand legend. Muted because they are a key,
+     not a call to action. */
+  --cap-stem:   hsl(150 calc(var(--sat) * 34%) 52%);
+  --cap-hum:    hsl(276 calc(var(--sat) * 30%) 62%);
+  --cap-bus:    hsl(38  calc(var(--sat) * 62%) 58%);
+  --cap-arts:   hsl(330 calc(var(--sat) * 34%) 60%);
+
+  --ok:   hsl(152 calc(var(--sat) * 44%) 58%);
+  --warn: hsl(40  calc(var(--sat) * 70%) 62%);
+  --bad:  hsl(354 calc(var(--sat) * 62%) 66%);
+
+  /* Elevation declared once: a hairline. The board is flat - it has no
+     floating panels, so no soft drop shadows either. */
+  --edge: 1px solid var(--rule);
+  --edge-2: 1px solid var(--rule-2);
+
+  --r-sm: 4px;
+  --r:    6px;
+  --r-lg: 10px;
+
+  /* Depth exists in the light, not in the box. Where a surface must sit above
+     another it earns a real offset and blur - never a zero-blur block. */
+  --lift: 0 1px 0 var(--rule), 0 8px 24px -14px hsl(203 40% 2% / 0.7);
+  --lift-hi: 0 1px 0 var(--rule-2), 0 18px 40px -18px hsl(203 40% 2% / 0.85);
+
+  /* Signage never uses rounded blobs. Board radii stay tight. */
+  --pad: clamp(1.05rem, 3vw, 2rem);
+  --maxw: 1240px;
+  --gut: clamp(1.05rem, 3.2vw, 2.25rem);
+
+  --font: 'Archivo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Consolas', monospace;
+
+  --t-fast: 120ms;
+  --t:      220ms;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);   /* exponential ease-out */
+}
+
+/* Daylight: the same board under corridor fluorescents. Ink-black vinyl on pale
+   enamel. The lamp keeps its meaning and gets a little more pigment to hold
+   against a light ground. Saturation is pulled back a touch - heavy ink on
+   paper reads louder than ink on enamel. */
+[data-theme='light'] {
+  --sat: 0.9;
+
+  --board:    hsl(42 calc(var(--sat) * 14%) 92%);
+  --board-2:  hsl(42 calc(var(--sat) * 22%) 97%);
+  --key:      hsl(42 calc(var(--sat) * 18%) 99%);
+  --key-2:    hsl(42 calc(var(--sat) * 12%) 96%);
+  --rule:     hsl(42 calc(var(--sat) * 12%) 82%);
+  --rule-2:   hsl(42 calc(var(--sat) * 14%) 68%);
+
+  --ink:      hsl(203 calc(var(--sat) * 34%) 10%);
+  --ink-2:    hsl(203 calc(var(--sat) * 15%) 33%);
+  --ink-3:    hsl(203 calc(var(--sat) * 12%) 42%);
+
+  --lamp:     hsl(18 calc(var(--sat) * 88%) 48%);
+  --lamp-2:   hsl(18 calc(var(--sat) * 90%) 42%);
+  --lamp-dim: hsl(18 calc(var(--sat) * 55%) 78%);
+  --on-lamp:  hsl(42 40% 99%);
+
+  --cap-stem: hsl(154 calc(var(--sat) * 34%) 34%);
+  --cap-hum:  hsl(276 calc(var(--sat) * 30%) 42%);
+  --cap-bus:  hsl(32  calc(var(--sat) * 62%) 40%);
+  --cap-arts: hsl(334 calc(var(--sat) * 34%) 44%);
+
+  --lift:   0 1px 0 var(--rule), 0 8px 22px -16px hsl(42 30% 40% / 0.28);
+  --lift-hi: 0 1px 0 var(--rule-2), 0 18px 38px -20px hsl(42 30% 35% / 0.36);
+}
+
+/* ---------------------------------------------------------------- reset -- */
+* { box-sizing: border-box; }
+*::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+html, body, #root { min-height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 1rem;
+  line-height: 1.6;
+  background: var(--board);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  transition: background-color var(--t) var(--ease), color var(--t) var(--ease);
+}
+
+/* The enamel itself. Lit from above, so the sheet has a falloff - this is a
+   surface under a lamp, not a gradient for decoration. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, hsl(200 calc(var(--sat) * 26%) 99% / 0.045) 0%, transparent 34%),
+    radial-gradient(120% 80% at 50% -12%, hsl(18 calc(var(--sat) * 60%) 50% / 0.07), transparent 58%);
+}
+[data-theme='light'] body::before {
+  background:
+    linear-gradient(180deg, hsl(42 40% 100% / 0.75) 0%, transparent 38%),
+    radial-gradient(120% 80% at 50% -12%, hsl(18 calc(var(--sat) * 70%) 60% / 0.07), transparent 58%);
+}
+
+/* The key grid. A real board's registration grid, visible because it is part
+   of how the board is built - not a decorative overlay. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, var(--rule) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--rule) 1px, transparent 1px);
+  background-size: 88px 88px;
+  opacity: 0.34;
+  mask-image: linear-gradient(180deg, #000 0%, transparent 70%);
+}
+
+h1, h2, h3, h4 { margin: 0 0 0.5em; font-weight: 700; line-height: 1.06; letter-spacing: -0.025em; text-wrap: balance; }
+h1 { font-size: clamp(2.35rem, 7.4vw, 5.25rem); font-weight: 800; letter-spacing: -0.035em; line-height: 0.95; }
+h2 { font-size: clamp(1.6rem, 3.6vw, 2.4rem); }
+h3 { font-size: clamp(1.08rem, 2.1vw, 1.28rem); }
+p  { margin: 0 0 1rem; color: var(--ink-2); max-width: 68ch; text-wrap: pretty; }
+a  { color: var(--ink); text-decoration-color: var(--rule-2); text-underline-offset: 0.22em; text-decoration-thickness: 1px; }
+a:hover { text-decoration-color: var(--lamp); }
+img, svg { max-width: 100%; display: block; }
+ul, ol { color: var(--ink-2); }
+code, kbd { font-family: var(--mono); font-size: 0.88em; }
+hr { border: 0; border-top: var(--edge); margin: 1.6rem 0; }
+
+/* -------------------------------------------------------- browser skins -- */
+/* The parts of the page we did not draw still carry the design. */
+::selection { background: var(--lamp); color: var(--on-lamp); }
+
+:focus-visible {
+  outline: 2px solid var(--lamp);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+* { scrollbar-width: thin; scrollbar-color: var(--rule-2) transparent; }
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: var(--board); }
+::-webkit-scrollbar-thumb { background: var(--rule-2); border: 3px solid var(--board); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-3); }
+
+input, textarea, select, button { font: inherit; color: inherit; }
+input::placeholder, textarea::placeholder { color: var(--ink-3); opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* --------------------------------------------------------------- layout -- */
+.shell { display: flex; flex-direction: column; min-height: 100dvh; }
+.app-main { flex: 1; }
+.container { width: 100%; max-width: var(--maxw); margin-inline: auto; padding-inline: var(--gut); }
+.center { display: grid; place-items: center; }
+.stack > * + * { margin-top: 0.85rem; }
+.stack-sm > * + * { margin-top: 0.45rem; }
+.row { display: flex; align-items: center; gap: 0.6rem; }
+.row-between { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.gap { display: flex; align-items: center; gap: 0.5rem; }
+.grid { display: grid; gap: 1px; background: var(--rule); border: var(--edge); }
+.grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+@media (min-width: 640px) { .grid-2, .grid-3 { grid-template-columns: repeat(2, 1fr); } .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } .grid-4 { grid-template-columns: repeat(4, 1fr); } }
+
+.section { padding-block: clamp(3.5rem, 9vw, 7rem); }
+.section-head { margin-bottom: clamp(1.75rem, 4vw, 3rem); }
+.lead { font-size: clamp(1.02rem, 1.6vw, 1.18rem); color: var(--ink-2); max-width: 60ch; }
+.muted { color: var(--ink-2); }
+.tiny { font-size: 0.8125rem; line-height: 1.5; color: var(--ink-3); }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.hint { font-size: 0.8125rem; color: var(--ink-3); }
+.hint-danger { color: var(--bad); font-size: 0.8125rem; }
+.divider { border-top: var(--edge); }
+.eyebrow { display: none; } /* banned: a label above the heading is not the heading */
+.gradient-text { color: var(--ink); }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.skip-link {
+  position: absolute; left: -9999px; top: 0; z-index: 200;
+  background: var(--lamp); color: var(--on-lamp);
+  padding: 0.7rem 1.1rem; font-weight: 700; border-radius: 0 0 var(--r) 0;
+}
+.skip-link:focus { left: 0; }
+
+/* -------------------------------------------------------------- surface -- */
+.card {
+  background: var(--key);
+  border: var(--edge);
+  border-radius: var(--r-lg);
+  padding: clamp(1.1rem, 2.4vw, 1.6rem);
+}
+.card-tight { padding: 0.9rem 1rem; }
+.empty { padding: 2rem 1rem; text-align: center; color: var(--ink-3); }
+
+/* -------------------------------------------------------------- controls -- */
+.btn {
+  --btn-bg: transparent;
+  --btn-fg: var(--ink);
+  --btn-edge: var(--rule-2);
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  min-height: 44px;                      /* touch target, always */
+  padding: 0.6rem 1.15rem;
+  font-size: 0.9375rem; font-weight: 600; letter-spacing: -0.01em;
+  color: var(--btn-fg); background: var(--btn-bg);
+  border: 1px solid var(--btn-edge); border-radius: var(--r);
+  cursor: pointer; text-decoration: none; white-space: nowrap;
+  transition: background-color var(--t) var(--ease), border-color var(--t) var(--ease),
+              color var(--t) var(--ease), transform var(--t-fast) var(--ease);
+}
+.btn:hover { border-color: var(--ink-3); text-decoration: none; }
+.btn:active { transform: translateY(1px); }
+.btn[disabled], .btn[aria-disabled='true'] { opacity: 0.45; cursor: not-allowed; }
+
+/* The struck key. The one loud control, and it is loud for a reason. */
+.btn-primary {
+  --btn-bg: var(--lamp);
+  --btn-fg: var(--on-lamp);
+  --btn-edge: var(--lamp);
+  font-weight: 700;
+}
+.btn-primary:hover { --btn-bg: var(--lamp-2); --btn-edge: var(--lamp-2); }
+
+.btn-ghost { --btn-bg: transparent; --btn-edge: var(--rule); }
+.btn-danger { --btn-fg: var(--bad); --btn-edge: var(--bad); }
+.btn-sm { min-height: 36px; padding: 0.35rem 0.7rem; font-size: 0.875rem; }
+.btn-block { width: 100%; }
+
+.field { display: block; }
+.field > label { display: block; font-size: 0.8125rem; font-weight: 600; color: var(--ink-2); margin-bottom: 0.35rem; letter-spacing: 0.01em; }
+
+/* 16px minimum: anything smaller makes iOS zoom on focus. */
+.input, .select, .textarea {
+  width: 100%; min-height: 46px;
+  padding: 0.65rem 0.8rem;
+  font-size: 1rem;
+  color: var(--ink); background: var(--board-2);
+  border: 1px solid var(--rule-2); border-radius: var(--r);
+  transition: border-color var(--t) var(--ease), background-color var(--t) var(--ease);
+}
+.input:hover, .select:hover, .textarea:hover { border-color: var(--ink-3); }
+.input:focus, .select:focus, .textarea:focus { border-color: var(--lamp); background: var(--board); }
+.textarea { min-height: 110px; resize: vertical; line-height: 1.6; }
+.select { appearance: none; padding-right: 2.2rem; background-image: none; cursor: pointer; }
+.checkbox { width: 20px; height: 20px; accent-color: var(--lamp); }
+
+/* Status is carried by the whole panel - a 1px rule in the status hue plus a
+   ground tinted toward it. A thick edge on one side is the tell to avoid. */
+.alert {
+  --alert-hue: var(--ink-3);
+  position: relative;
+  padding: 0.8rem 0.95rem 0.8rem 1.6rem;
+  border: 1px solid color-mix(in oklab, var(--alert-hue) 34%, var(--rule));
+  border-radius: var(--r);
+  background:
+    linear-gradient(90deg, color-mix(in oklab, var(--alert-hue) 11%, var(--board-2)), var(--board-2) 60%);
+  font-size: 0.9rem; color: var(--ink-2);
+}
+.alert::before {
+  content: '';
+  position: absolute; left: 0.7rem; top: 50%;
+  width: 6px; height: 6px; margin-top: -3px;
+  background: var(--alert-hue); border-radius: 1px;
+}
+.alert-info { --alert-hue: var(--cap-stem); }
+.alert-warn { --alert-hue: var(--warn); }
+.alert-error { --alert-hue: var(--bad); }
+.badge-warn { color: var(--warn); border-color: color-mix(in oklab, var(--warn) 34%, transparent); }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em;
+  border: var(--edge); border-radius: var(--r-sm);
+  color: var(--ink-2); background: var(--board-2);
+}
+.badge-brand { color: var(--lamp); border-color: var(--lamp-dim); }
+.badge-ok { color: var(--ok); border-color: color-mix(in oklab, var(--ok) 40%, transparent); }
+.badge-warn { border-left-width: 2px; }
+
+.chip-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.chip {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  min-height: 36px; padding: 0.35rem 0.75rem;
+  font-size: 0.875rem; color: var(--ink-2);
+  background: var(--board-2); border: var(--edge); border-radius: 99px;
+  cursor: pointer;
+  transition: color var(--t) var(--ease), border-color var(--t) var(--ease);
+}
+.chip:hover { color: var(--ink); border-color: var(--ink-3); }
+.chip[aria-pressed='true'], .chip.is-on { color: var(--on-lamp); background: var(--lamp); border-color: var(--lamp); }
+
+.skill-tag, .code {
+  display: inline-flex; align-items: center;
+  padding: 0.12rem 0.45rem; border-radius: var(--r-sm);
+  background: var(--board); border: var(--edge);
+  font-size: 0.75rem; color: var(--ink-2);
+}
+.code-box { padding: 0.85rem; background: var(--board); border: var(--edge); border-radius: var(--r); overflow-x: auto; }
+.tick { color: var(--ok); }
+
+/* -------------------------------------------------------------- loading -- */
+.spinner {
+  width: 15px; height: 15px; flex: none;
+  border: 2px solid var(--rule-2); border-top-color: var(--lamp);
+  border-radius: 50%;
+  animation: spin 640ms linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.skeleton {
+  background: linear-gradient(90deg, var(--key) 0%, var(--key-2) 50%, var(--key) 100%);
+  background-size: 200% 100%;
+  border-radius: var(--r-sm);
+  animation: sweep 1.4s var(--ease) infinite;
+}
+@keyframes sweep { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+/* The board prints its status rather than floating a spinner in a void. */
+.status-line {
+  display: flex; align-items: center; gap: 0.55rem;
+  font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.status-line[data-state='working'] { color: var(--lamp); }
+.status-line[data-state='done'] { color: var(--ok); }
+
+.typing { display: inline-flex; gap: 3px; align-items: center; }
+.typing > i { width: 4px; height: 4px; border-radius: 50%; background: var(--ink-3); animation: pulse 1.1s var(--ease) infinite; }
+.typing > i:nth-child(2) { animation-delay: 120ms; }
+.typing > i:nth-child(3) { animation-delay: 240ms; }
+@keyframes pulse { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+
+/* ------------------------------------------------------------------ nav -- */
+.topbar {
+  position: sticky; top: 0; z-index: 60;
+  background: color-mix(in oklab, var(--board) 88%, transparent);
+  backdrop-filter: blur(10px) saturate(1.1);
+  border-bottom: var(--edge);
+}
+.topbar-inner {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  min-height: 64px;
+  max-width: var(--maxw); margin-inline: auto; padding-inline: var(--gut);
+}
+.brand { display: inline-flex; align-items: center; gap: 0.6rem; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); text-decoration: none; }
+/* The brandmark: an anvil under a struck node. It reads from the same tokens
+   as the rest of the board, so it follows the scene and the ink-load slider
+   instead of being a frozen image that drifts out of the system. */
+.brand-mark {
+  width: 30px; height: 30px; flex: none;
+  border-radius: var(--r-sm);
+  background: var(--board-2);
+  border: 1px solid var(--rule);
+  transition: border-color var(--t) var(--ease);
+}
+.brand:hover .brand-mark { border-color: var(--lamp-dim); }
+.nav-desktop { display: none; }
+@media (min-width: 900px) { .nav-desktop { display: flex; align-items: center; gap: 0.25rem; } .burger { display: none; } .mobile-nav { display: none !important; } }
+
+.nav-link {
+  position: relative;
+  display: inline-flex; align-items: center;
+  min-height: 44px; padding: 0 0.7rem;
+  font-size: 0.9rem; font-weight: 500; color: var(--ink-2);
+  text-decoration: none; border-radius: var(--r-sm);
+  transition: color var(--t) var(--ease);
+}
+.nav-link::after {
+  content: ''; position: absolute; left: 0.7rem; right: 0.7rem; bottom: 9px;
+  height: 2px; background: var(--lamp);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform var(--t) var(--ease);
+}
+.nav-link:hover { color: var(--ink); }
+.nav-link[aria-current='page'] { color: var(--ink); font-weight: 600; }
+.nav-link[aria-current='page']::after { transform: scaleX(1); }
+
+.burger {
+  display: grid; place-items: center; width: 44px; height: 44px;
+  background: transparent; border: var(--edge); border-radius: var(--r);
+  color: var(--ink); cursor: pointer;
+}
+/* Must come after the base rule: same specificity, later wins. */
+@media (min-width: 900px) { .burger { display: none; } }
+.mobile-nav { position: fixed; inset: 64px 0 auto; z-index: 55; background: var(--board); border-bottom: var(--edge); padding: var(--gut); }
+.mobile-nav a { display: flex; align-items: center; min-height: 48px; color: var(--ink); font-weight: 600; text-decoration: none; border-bottom: var(--edge); }
+
+/* ----------------------------------------------------------------- tabs -- */
+/* Tabs sit on the board like a legend strip. The active key is struck. */
+.tabs {
+  display: flex; gap: 0; overflow-x: auto;
+  border-bottom: var(--edge);
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  position: relative;
+  min-height: 46px; padding: 0 1rem;
+  font-size: 0.9rem; font-weight: 600; color: var(--ink-3);
+  background: transparent; border: 0; border-bottom: 2px solid transparent;
+  cursor: pointer; white-space: nowrap;
+  transition: color var(--t) var(--ease), border-color var(--t) var(--ease);
+}
+.tab:hover { color: var(--ink-2); }
+.tab[aria-selected='true'], .tab.is-active { color: var(--ink); border-bottom-color: var(--lamp); }
+
+/* ------------------------------------------------- ported from legacy pages -- */
+/* These lived in the old pages.css, which was retired with the old visual
+   world. Ported here so one stylesheet owns the board. */
+
+/* Password reveal. The old rule used dead tokens and was sized too narrow for
+   its own label, which put the button over the input text. */
+.password-field { position: relative; display: flex; align-items: center; }
+.password-field .input { padding-right: 6.25rem; }
+.reveal {
+  position: absolute; right: 6px;
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  min-height: 34px; padding: 0 0.55rem;
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.01em;
+  color: var(--ink-3);
+  background: var(--key); border: 1px solid var(--rule-2); border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: color var(--t) var(--ease), border-color var(--t) var(--ease);
+}
+.reveal:hover { color: var(--ink); border-color: var(--ink-3); }
+
+.attempt-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--rule-2); }
+.attempt-dot.on { background: var(--lamp-dim); }
+.attempt-dot.hot { background: var(--lamp); }
+
+.radio-card {
+  display: flex; gap: 0.7rem; align-items: flex-start;
+  padding: 0.9rem 1rem; min-height: 48px;
+  background: var(--board-2); border: 1px solid var(--rule);
+  border-radius: var(--r); cursor: pointer;
+  transition: border-color var(--t) var(--ease), background-color var(--t) var(--ease);
+}
+.radio-card:hover { background: var(--key); border-color: var(--ink-3); }
+.radio-card.selected { border-color: var(--lamp); background: var(--key); }
+.radio-card input { margin-top: 0.2rem; accent-color: var(--lamp); }
+
+.steps { display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; }
+.step {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  font-size: 0.8125rem; color: var(--ink-3);
+}
+.step::before {
+  content: ''; width: 7px; height: 7px; border-radius: 1px;
+  background: var(--rule-2);
+}
+.step.done { color: var(--ink-2); }
+.step.done::before { background: var(--ink-3); }
+.step.current { color: var(--ink); font-weight: 600; }
+.step.current::before { background: var(--lamp); }
+
+.stat { display: flex; flex-direction: column; gap: 0.2rem; }
+
+/* The score is a real measurement, so it reads as a numeral and a meter.
+   A ring would be decoration standing in for the number. */
+.score-ring {
+  display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
+  padding: 0.9rem 0.6rem;
+  background: var(--board-2); border: 1px solid var(--rule); border-radius: var(--r);
+}
+.score-ring .score-value {
+  font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums; color: var(--ink); line-height: 1;
+}
+.score-ring .score-value[data-top='true'] { color: var(--lamp); }
+
+.feedback-box {
+  padding: 0.85rem 0.95rem;
+  border: 1px solid var(--rule); border-radius: var(--r);
+  background: var(--board-2); font-size: 0.875rem;
+}
+
+.session-item {
+  display: block; width: 100%; text-align: left;
+  padding: 0.7rem 0.85rem; min-height: 44px;
+  background: transparent; border: 0; border-bottom: 1px solid var(--rule);
+  color: var(--ink-2); cursor: pointer;
+  transition: background-color var(--t) var(--ease), color var(--t) var(--ease);
+}
+.session-item:hover { background: var(--key); color: var(--ink); }
+.session-item.active { color: var(--ink); background: var(--key); box-shadow: inset 2px 0 0 var(--lamp); }
+
+.hero { padding-block: clamp(3rem, 11vh, 8rem) clamp(2.5rem, 6vw, 4.5rem); }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.75rem; }
+.how { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: var(--r-lg); overflow: hidden; }
+.spark { display: inline-block; width: 2px; background: var(--ink-3); border-radius: 99px; }
+
+/* ------------------------------------------------------------ strand game -- */
+/* A side game. It reads in the board's vocabulary because it is made of keys,
+   but it sits outside the product's real flow and never gates anything. */
+.strand-game {
+  display: grid; gap: 0.9rem;
+  padding: 1.1rem;
+  background: var(--board-2);
+  border: var(--edge);
+  border-radius: var(--r-lg);
+}
+.strand-game:focus { outline: none; }
+.strand-game-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.strand-game-title { font-size: 1.1rem; margin: 0.15rem 0 0; }
+.strand-game-score { display: flex; align-items: baseline; gap: 0.25rem; color: var(--ink); }
+.strand-game-score .mono { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em; }
+
+.strand-prompt { display: grid; gap: 0.3rem; }
+.strand-subject {
+  margin: 0; color: var(--ink);
+  font-size: clamp(1.05rem, 2.2vw, 1.25rem); font-weight: 700; letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.strand-keys { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--rule); border: var(--edge); border-radius: var(--r); overflow: hidden; }
+@media (min-width: 520px) { .strand-keys { grid-template-columns: repeat(4, 1fr); } }
+
+.strand-key {
+  display: flex; align-items: center; gap: 0.45rem;
+  min-height: 46px; padding: 0 0.6rem;
+  background: var(--board); border: 0; cursor: pointer;
+  color: var(--ink-2); font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.01em;
+  transition: background-color var(--t) var(--ease), color var(--t) var(--ease);
+}
+.strand-key:hover:not(:disabled) { background: var(--key); color: var(--ink); }
+.strand-key:disabled { cursor: default; }
+.strand-key-num { font-size: 0.6875rem; color: var(--ink-3); }
+.strand-key-label { flex: 1; }
+
+/* State is a struck lamp, the board's own vocabulary for "this one". */
+.strand-key[data-state='picked'] { background: var(--key-2); color: var(--ink); }
+.strand-key[data-state='right'] { background: var(--ok); color: var(--on-lamp); }
+.strand-key[data-state='right'] .strand-key-num { color: color-mix(in oklab, var(--on-lamp) 65%, transparent); }
+.strand-key[data-state='wrong'] { background: var(--bad); color: var(--on-lamp); }
+
+.strand-game-done { display: grid; gap: 0.6rem; justify-items: start; }
+.strand-game-final { margin: 0; color: var(--ink-2); }
+.strand-game-final strong { color: var(--lamp); }
+.strand-game-foot { margin: 0; }
+
+/* ---------------------------------------------------------------- board -- */
+/* The board's first viewport. It owns the whole sheet, edge to edge. */
+.board-head { padding-block: clamp(3rem, 11vh, 8rem) clamp(2.5rem, 6vw, 4.5rem); }
+.board-title {
+  max-width: 14ch;
+  /* Signage sets the destination code wide. Archivo carries a width axis, so
+     the headline is set as it would be cut on the board. */
+  font-variation-settings: 'wdth' 112;
+}
+.board-lead { margin-top: 1.4rem; max-width: 56ch; font-size: clamp(1.05rem, 1.9vw, 1.3rem); }
+.board-actions { margin-top: 1.75rem; flex-wrap: wrap; }
+.board-destinations { margin-top: clamp(2.5rem, 6vw, 4rem); }
+.board-note { margin: 0.75rem 0 0; }
+
+/* The destination strip: ranked matches as lit departures. */
+.destinations { display: grid; gap: 1px; background: var(--rule); border: var(--edge); border-radius: var(--r-lg); overflow: hidden; }
+@media (min-width: 760px) { .destinations { grid-template-columns: repeat(3, 1fr); } }
+
+.destination {
+  position: relative;
+  display: flex; flex-direction: column; gap: 0.5rem;
+  padding: 1.15rem 1.2rem 1.3rem;
+  background: var(--board-2);
+  text-decoration: none; color: inherit;
+  transition: background-color var(--t) var(--ease);
+}
+.destination:hover, .destination:focus-visible { background: var(--key); text-decoration: none; }
+
+/* The lamp. It is struck, not faded in - one hard step, then a short decay. */
+.destination::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: var(--lamp);
+  transform: scaleY(0); transform-origin: top;
+  transition: transform 260ms var(--ease);
+}
+.destination:hover::before, .destination:focus-visible::before { transform: scaleY(1); }
+.destination[data-rank='1']::before { transform: scaleY(1); }
+
+.destination-code {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem;
+  font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.destination-score {
+  font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums; color: var(--ink); line-height: 1;
+}
+.destination[data-rank='1'] .destination-score { color: var(--lamp); }
+.destination-name { font-size: 1.06rem; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
+.destination-why { font-size: 0.875rem; color: var(--ink-2); margin: 0; }
+
+.meter { height: 3px; background: var(--rule); border-radius: 99px; overflow: hidden; }
+.meter > i { display: block; height: 100%; background: var(--lamp); transform-origin: left; }
+
+/* Legend strip: the strand key along the bottom edge of the board. */
+/* --------------------------------------------------- board settings (UI) -- */
+.nav-settings { margin-inline-start: auto; padding-inline-end: 0.35rem; }
+.brand-ai { color: var(--lamp); font-weight: 800; }
+
+.board-controls { display: flex; align-items: center; gap: 0.65rem; }
+.board-controls.is-compact { gap: 0.4rem; }
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--rule-2); border-radius: var(--r);
+  overflow: hidden;
+  background: var(--board-2);
+}
+.segmented-btn {
+  min-height: 38px; padding: 0 0.75rem;
+  font-size: 0.8125rem; font-weight: 600; color: var(--ink-3);
+  background: transparent; border: 0; cursor: pointer; white-space: nowrap;
+  transition: color var(--t) var(--ease), background-color var(--t) var(--ease);
+}
+.segmented-btn + .segmented-btn { border-left: 1px solid var(--rule-2); }
+.segmented-btn:hover { color: var(--ink-2); }
+.segmented-btn[aria-pressed='true'] { background: var(--lamp); color: var(--on-lamp); }
+
+.sat-control { display: inline-flex; align-items: center; gap: 0.45rem; }
+.sat-label {
+  font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.sat-range {
+  -webkit-appearance: none; appearance: none;
+  width: 74px; height: 38px; background: transparent; cursor: pointer;
+}
+.sat-range::-webkit-slider-runnable-track { height: 3px; background: var(--rule-2); border-radius: 99px; }
+.sat-range::-moz-range-track { height: 3px; background: var(--rule-2); border-radius: 99px; }
+.sat-range::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 14px; height: 14px; margin-top: -5.5px;
+  background: var(--lamp); border: 0; border-radius: 2px; cursor: pointer;
+}
+.sat-range::-moz-range-thumb { width: 14px; height: 14px; background: var(--lamp); border: 0; border-radius: 2px; cursor: pointer; }
+.sat-range:focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
+
+/* Legend strip: the strand key along the bottom edge of the board. */
+.legend {
+  display: flex; flex-wrap: wrap; gap: 0.4rem 1.15rem;
+  padding-top: 1rem; border-top: var(--edge);
+  font-size: 0.8125rem; color: var(--ink-3);
+}
+.legend-item { display: inline-flex; align-items: center; gap: 0.45rem; }
+.legend-swatch { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+
+/* --------------------------------------------------------------- tables -- */
+.table-wrap { overflow-x: auto; border: var(--edge); border-radius: var(--r); }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th, td { padding: 0.7rem 0.85rem; text-align: left; border-bottom: var(--edge); }
+th { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+td { color: var(--ink-2); }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr { transition: background-color var(--t-fast) var(--ease); }
+tbody tr:hover { background: var(--key); }
+td .mono, .mono { font-variant-numeric: tabular-nums; }
+
+.kpi { display: flex; flex-direction: column; gap: 0.2rem; padding: 1rem 1.1rem; background: var(--key); border: var(--edge); border-radius: var(--r); }
+.kpi-value { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.035em; font-variant-numeric: tabular-nums; line-height: 1; }
+.kpi-label { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+
+.progress-track { height: 4px; background: var(--rule); border-radius: 99px; overflow: hidden; }
+.progress-track > i { display: block; height: 100%; background: var(--lamp); }
+
+.bar-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.5rem 0.75rem; align-items: center; }
+.bar { height: 6px; background: var(--rule); border-radius: 99px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--ink-3); }
+
+.skill-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.55rem 0; border-bottom: var(--edge); }
+.skill-row:last-child { border-bottom: 0; }
+.skill-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.event-row { display: grid; gap: 0.15rem; padding: 0.7rem 0; border-bottom: var(--edge); }
+.event-row:last-child { border-bottom: 0; }
+
+/* ----------------------------------------------------------------- chat -- */
+.chat-shell { display: flex; flex-direction: column; height: min(72vh, 680px); border: var(--edge); border-radius: var(--r-lg); background: var(--board-2); overflow: hidden; }
+.chat-panel { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.chat-scroll { flex: 1; overflow-y: auto; padding: 1.1rem; display: flex; flex-direction: column; gap: 0.85rem; }
+.msg { max-width: min(82%, 58ch); padding: 0.75rem 0.95rem; border-radius: var(--r-lg); font-size: 0.9375rem; }
+.msg-bot { background: var(--key); border: var(--edge); border-bottom-left-radius: var(--r-sm); }
+.msg-user { margin-left: auto; background: var(--lamp); color: var(--on-lamp); border-bottom-right-radius: var(--r-sm); }
+.msg-time { display: block; margin-top: 0.35rem; font-size: 0.6875rem; opacity: 0.6; }
+.chat-composer { display: flex; gap: 0.5rem; padding: 0.75rem; border-top: var(--edge); background: var(--board); }
+.session-list { display: flex; flex-direction: column; }
+.session-list button { text-align: left; padding: 0.7rem 0.85rem; background: transparent; border: 0; border-bottom: var(--edge); color: var(--ink-2); cursor: pointer; min-height: 44px; }
+.session-list button:hover { background: var(--key); color: var(--ink); }
+
+/* ----------------------------------------------------------------- auth -- */
+.auth-wrap { display: grid; gap: 1.5rem; padding-block: clamp(2rem, 6vw, 4rem); align-items: start; }
+@media (min-width: 900px) { .auth-wrap { grid-template-columns: 1fr minmax(0, 420px); gap: clamp(2rem, 6vw, 5rem); } }
+.auth-card { background: var(--key); border: var(--edge); border-radius: var(--r-lg); padding: clamp(1.25rem, 3vw, 2rem); }
+.auth-aside { display: none; }
+@media (min-width: 900px) { .auth-aside { display: block; } }
+.auth-list { display: grid; gap: 0.85rem; margin-top: 1.5rem; }
+.auth-list li { display: grid; grid-template-columns: auto 1fr; gap: 0.65rem; align-items: start; font-size: 0.9rem; color: var(--ink-2); list-style: none; }
+.auth-list ul, .auth-list { padding: 0; margin: 0; }
+.auth-list li::before { content: ''; width: 6px; height: 6px; margin-top: 0.55em; background: var(--lamp); border-radius: 1px; }
+
+.captcha-box { border: var(--edge); border-radius: var(--r); padding: 0.9rem; background: var(--board-2); }
+.captcha-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.75rem; font-size: 0.875rem; color: var(--ink-2); }
+.captcha-head strong { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--ink); }
+.captcha-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.captcha-img { border-radius: var(--r-sm); border: var(--edge); }
+.hp-field { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+.attempt-meter { display: flex; align-items: center; gap: 0.3rem; }
+.attempt-meter > i { width: 6px; height: 6px; border-radius: 50%; background: var(--rule-2); }
+.attempt-meter > i.is-on { background: var(--lamp); }
+
+/* --------------------------------------------------------------- misc -- */
+.toast-stack { position: fixed; right: var(--gut); bottom: var(--gut); z-index: 120; display: grid; gap: 0.5rem; width: min(360px, calc(100vw - 2 * var(--gut))); }
+.toast { display: flex; gap: 0.6rem; padding: 0.8rem 0.95rem; background: var(--key); border: var(--edge); border-radius: var(--r); box-shadow: var(--lift-hi); font-size: 0.9rem; }
+.toast-icon { flex: none; }
+
+.footer { border-top: var(--edge); margin-top: auto; }
+.footer-inner { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; padding-block: 1.75rem; font-size: 0.875rem; color: var(--ink-3); }
+.footer a { color: var(--ink-2); }
+
+.quiz-shell { display: grid; gap: 1.5rem; }
+.radio-list { display: grid; gap: 1px; background: var(--rule); border: var(--edge); border-radius: var(--r); overflow: hidden; }
+.radio-list label { display: flex; gap: 0.7rem; align-items: flex-start; padding: 0.85rem 0.95rem; background: var(--board-2); cursor: pointer; min-height: 44px; transition: background-color var(--t-fast) var(--ease); }
+.radio-list label:hover { background: var(--key); }
+.radio-list input { margin-top: 0.25rem; accent-color: var(--lamp); }
+
+.rec-card { background: var(--board-2); border: var(--edge); border-radius: var(--r-lg); padding: 1.15rem; }
+.rec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.rec-title { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
+.level { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.have { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+
+.resume-layout { display: grid; gap: 1.25rem; }
+@media (min-width: 900px) { .resume-layout { grid-template-columns: 340px 1fr; } }
+.resume-paper { background: var(--board-2); border: var(--edge); border-radius: var(--r); padding: clamp(1.25rem, 3vw, 2.5rem); }
+
+.notfound { display: grid; place-items: center; text-align: center; gap: 1rem; padding: clamp(3rem, 12vh, 8rem) var(--gut); }
+.boot-screen { display: grid; place-items: center; min-height: 100dvh; gap: 1rem; }
+.boot-logo {
+  width: 56px; height: 56px;
+  border-radius: var(--r);
+  background: var(--board-2); border: 1px solid var(--rule);
+}
+.reveal { animation: rise 420ms var(--ease) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.how-item { padding: 1.1rem 0; border-top: var(--edge); }
+.how-item:last-child { border-bottom: var(--edge); }
+.feature-card { padding: 1.15rem; background: var(--board-2); border: var(--edge); border-radius: var(--r); }
+.feature-icon { color: var(--lamp); margin-bottom: 0.5rem; }
+.cta-band { padding: clamp(2rem, 6vw, 3.5rem); background: var(--key); border: var(--edge); border-radius: var(--r-lg); }

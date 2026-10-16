@@ -1,0 +1,66 @@
+# ============================================================================
+# SkillForge AI - frontend (public repository)
+#
+# This repository contains the browser application ONLY. There is no backend
+# here and no database credential of any kind - the app talks to a private REST
+# API over HTTPS, configured with one variable: VITE_API_BASE_URL.
+#
+# That split is deliberate. Anything readable by a browser is readable by
+# everyone, so nothing secret can live in here even accidentally. The rules
+# below exist to keep that true.
+# ============================================================================
+
+# --- secrets ------------------------------------------------------------------
+# Nothing secret should ever reach this repo. These rules are the backstop for
+# the day someone pastes a key into a source file "just to test".
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets.json
+.credentials
+
+# --- dependencies -------------------------------------------------------------
+node_modules/
+.pnpm-store/
+.yarn/
+
+# --- build output -------------------------------------------------------------
+dist/
+build/
+.vite/
+.vercel/
+
+# --- logs ---------------------------------------------------------------------
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# --- editor / OS --------------------------------------------------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# --- transient test artifacts --------------------------------------------------
+.tmp-*
+*.tmp
+
+# --- local AI/editor tooling --------------------------------------------------
+# Agent skills, editor hooks and personal config answers. These describe how
+# the project is worked on, not what the project is, and they differ per
+# machine. Committing them helps nobody and leaks local answers into history.
+.agents/
+.codex/
+.impeccable/
+.claude/
+.cursor/
+
+# --- IMPORTANT -----------------------------------------------------------------
+# vercel.json must stay tracked. It carries the build command, the SPA rewrite
+# and every security header, including the Content-Security-Policy. Losing it
+# silently removes those headers from the deployed site.
+!frontend/vercel.json
