@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { api } from '../lib/api.js';
+import { api, API_BASE } from '../lib/api.js';
 import { useToast } from '../components/Toast.jsx';
 import { Guarded } from '../components/Protected.jsx';
 import { Alert, EmptyState, LoadingBlock } from '../components/ui.jsx';
@@ -177,11 +177,11 @@ p,li{font-size:13px}</style></head><body>${active.content_html}</body></html>`;
                 </button>
                 <a
                   className="btn btn-sm btn-primary"
-                  href={`${import.meta.env.VITE_API_BASE_URL || ''}/resumes/${active.id}/print`}
+                  href={`${API_BASE}/resumes/${active.id}/print`}
                   onClick={async (e) => {
                     e.preventDefault();
                     try {
-                      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/resumes/${active.id}/print`, {
+                      const res = await fetch(`${API_BASE}/resumes/${active.id}/print`, {
                         headers: { Authorization: `Bearer ${sessionStorage.getItem('sf.access')}`, 'X-Client-App': 'skillforge-web' },
                       });
                       const html = await res.text();

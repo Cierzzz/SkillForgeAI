@@ -88,6 +88,22 @@ either can be cloned, built and deployed without the other being present.
 
 ### Deploying this repository
 
+#### Deploying to Netlify
+
+The repository is pre-configured for Netlify with `netlify.toml` at the root and `frontend/public/_redirects`:
+
+1. **Import Project:** In Netlify, click **Add new site** → **Import an existing project** → select `SkillForgeAI`.
+2. **Build settings:** Automatically inferred from `netlify.toml`:
+   - **Base directory:** `frontend`
+   - **Build command:** `npm install --include=dev && npm run build`
+   - **Publish directory:** `frontend/dist`
+3. **Set Environment Variable:**
+   - Navigate to **Site configuration** → **Environment variables**.
+   - Add `VITE_API_BASE_URL` set to your deployed `SkillForgeAI-api` URL (e.g. `https://your-api-host.example.com/api`).
+4. **Deploy:** Click **Deploy**. Since Vite bakes `VITE_API_BASE_URL` into the frontend bundle at build time, any changes to this URL require a redeploy.
+
+#### Deploying to Vercel
+
 1. Vercel → **Add New → Project** → import this repository
 2. **Root Directory:** `frontend`
 3. **Framework Preset:** Vite
@@ -96,6 +112,27 @@ either can be cloned, built and deployed without the other being present.
 
 `frontend/vercel.json` already sets the build command, output directory, SPA
 rewrites and every security header. Leave it alone.
+
+### Connecting with `SkillForgeAI-api`
+
+The frontend (`SkillForgeAI`) and backend (`SkillForgeAI-api`) are decoupled and connect over HTTPS:
+
+1. **CORS Origin:** Once the Netlify frontend is deployed (e.g. `https://profound-sherbet-44cced.netlify.app`), add its exact origin to the `SkillForgeAI-api` backend environment variable `ALLOWED_ORIGINS` and redeploy the API.
+2. **Reverse Proxy (Optional):** To eliminate CORS configurations entirely, proxy `/api/*` requests through Netlify directly to the API host by adding this redirect in `netlify.toml`:
+   ```toml
+   [[redirects]]
+     from = "/api/*"
+     to = "https://your-api-host.example.com/api/:splat"
+     status = 200
+     force = true
+   ```
+   When using the proxy, `VITE_API_BASE_URL` defaults to `/api` in production.
+
+#### Deploying the `SkillForgeAI-api` repository
+
+The backend repository (`SkillForgeAI-api`) contains the Node/Express 4 REST API, Supabase PostgreSQL schema/migrations, and AI provider integrations:
+- Deploy `SkillForgeAI-api` on your preferred Node hosting platform (e.g., Render, Railway, Fly.io, Heroku) or as serverless functions.
+- Configure its backend environment variables: database connection string, JWT secrets, AI API key(s), and `ALLOWED_ORIGINS` containing the Netlify URL.
 
 ### The one thing that breaks
 
